@@ -268,8 +268,12 @@ var PRESENTES = [
 ];
 var grid = document.getElementById('gift-grid');
 PRESENTES.forEach(function(p){
-  var c = document.createElement('div');
+  var c = document.createElement('a');
   c.className = 'gift-card';
+  c.href = 'https://www.amazon.com.br/s?k=' + encodeURIComponent(p.nome);
+  c.target = '_blank';
+  c.rel = 'noopener';
+  c.style.textDecoration = 'none';
   c.innerHTML =
     '<div style="width:100%; aspect-ratio:1/1; overflow:hidden; background:#F4F6EC">' +
       '<img src="'+p.img+'" alt="'+p.nome+'" style="width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s ease">' +
