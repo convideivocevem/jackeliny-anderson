@@ -147,6 +147,7 @@ input, textarea, select, button { font-family:'Sora',sans-serif; font-weight:200
         <label style="font-size:10px; letter-spacing:0.2em; color:#7A7461">QUANTAS PESSOAS (INCLUINDO VOCÊ)</label>
         <input id="f-acomp" type="number" min="1" max="10" value="1" style="border:none; border-bottom:1px solid #C9D0AE; background:transparent; padding:10px 2px; font-size:15px; color:#3E4A20; outline:none; width:90px">
       </div>
+      <div id="box-nomes" style="display:none; flex-direction:column; gap:9px"></div>
       <div style="display:flex; flex-direction:column; gap:7px">
         <label style="font-size:10px; letter-spacing:0.2em; color:#7A7461">RECADO PARA OS NOIVOS <span style="letter-spacing:0; text-transform:none; font-style:italic">(opcional)</span></label>
         <textarea id="f-recado" rows="3" placeholder="Deixe um carinho aqui" style="border:1px solid #E0E5CC; border-radius:10px; background:transparent; padding:11px; font-size:14px; color:#3E4A20; outline:none; resize:none"></textarea>
@@ -435,11 +436,27 @@ var boxAcomp = document.getElementById('box-acomp');
 var erroEl = document.getElementById('f-erro');
 var estiloOn  = 'flex:1; background:#5C6B39; color:#FFFFFF; border:1px solid #5C6B39; border-radius:999px; padding:13px 8px; font-size:11px; letter-spacing:0.12em; cursor:pointer; transition:all .25s ease';
 var estiloOff = 'flex:1; background:transparent; color:#7A8455; border:1px solid #C9D0AE; border-radius:999px; padding:13px 8px; font-size:11px; letter-spacing:0.12em; cursor:pointer; transition:all .25s ease';
+var boxNomes = document.getElementById('box-nomes');
+var fAcomp = document.getElementById('f-acomp');
+function renderNomes(){
+  var n = parseInt(fAcomp.value,10) || 1; if(n>10) n=10;
+  var qtd = Math.max(0, n-1);
+  var atuais = [].map.call(boxNomes.querySelectorAll('input'), function(i){ return i.value; });
+  if(vai===false || qtd===0){ boxNomes.style.display='none'; boxNomes.innerHTML=''; return; }
+  var html = '<label style="font-size:10px; letter-spacing:0.2em; color:#7A7461">QUEM MAIS VAI COM VOCÊ</label>';
+  for(var i=0;i<qtd;i++){
+    var v = (atuais[i]||'').replace(/"/g,'&quot;');
+    html += '<input type="text" class="f-nome-acomp" placeholder="Nome da '+(i+2)+'ª pessoa" value="'+v+'" style="border:none; border-bottom:1px solid #C9D0AE; background:transparent; padding:9px 2px; font-size:14px; color:#3E4A20; outline:none">';
+  }
+  boxNomes.innerHTML = html; boxNomes.style.display='flex';
+}
+fAcomp.oninput = renderNomes; fAcomp.onchange = renderNomes;
 function setVai(v){
   vai = v;
   btnSim.setAttribute('style', v===true ? estiloOn : estiloOff);
   btnNao.setAttribute('style', v===false ? estiloOn : estiloOff);
   boxAcomp.style.display = (v===false) ? 'none' : 'flex';
+  renderNomes();
   erroEl.style.display = 'none';
 }
 btnSim.onclick = function(){ setVai(true); };
@@ -472,7 +489,12 @@ btnEnviar.onclick = function(){
   if(!contato){ return mostrarErro('Deixe um e-mail ou telefone para contato.'); }
   if(vai===null){ return mostrarErro('Escolha se você poderá comparecer.'); }
 
-  var dados = { nome:nome, contato:contato, vai:(vai?'SIM':'NAO'), pessoas:pessoas, recado:recado };
+  var recadoFinal = recado;
+  if(vai!==false){
+    var nomesAcomp = [].map.call(document.querySelectorAll('.f-nome-acomp'), function(i){ return i.value.trim(); }).filter(Boolean);
+    if(nomesAcomp.length){ recadoFinal += (recado ? '\n\n' : '') + 'Acompanhantes: ' + nomesAcomp.join(', '); }
+  }
+  var dados = { nome:nome, contato:contato, vai:(vai?'SIM':'NAO'), pessoas:pessoas, recado:recadoFinal };
   btnEnviar.disabled = true;
   btnEnviar.textContent = 'ENVIANDO...';
 
